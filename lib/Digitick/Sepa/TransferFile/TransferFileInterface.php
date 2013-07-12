@@ -1,6 +1,7 @@
 <?php
 
-namespace Digitick\Sepa;
+namespace Digitick\Sepa\TransferFile;
+use Digitick\Sepa\GroupHeader;
 
 /**
  * User: s.rohweder@blage.net
@@ -12,7 +13,8 @@ namespace Digitick\Sepa;
 
 interface TransferFileInterface {
 
-    public function asXML();
+
+    public function __construct(GroupHeader $groupHeader);
 
     /**
      * @return GroupHeader
