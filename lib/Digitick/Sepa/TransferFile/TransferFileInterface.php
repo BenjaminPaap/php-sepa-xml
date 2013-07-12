@@ -1,6 +1,7 @@
 <?php
 
 namespace Digitick\Sepa\TransferFile;
+use Digitick\Sepa\DomBuilder\DomBuilderInterface;
 use Digitick\Sepa\GroupHeader;
 
 /**
@@ -20,4 +21,13 @@ interface TransferFileInterface {
      * @return GroupHeader
      */
     public function getGroupHeader();
+
+    /**
+     * Validate the transferfile
+     * @return mixed
+     */
+    public function validate();
+
+    public function accept(DomBuilderInterface $domBuilder);
+
 }

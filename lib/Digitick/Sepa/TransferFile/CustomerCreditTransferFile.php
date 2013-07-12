@@ -1,8 +1,12 @@
 <?php
 
 namespace Digitick\Sepa\TransferFile;
+use Digitick\Sepa\DomBuilder\DomBuilderInterface;
+use Digitick\Sepa\Exception\Exception;
+use Digitick\Sepa\Exception\InvalidTransferTypeException;
 use Digitick\Sepa\GroupHeader;
 use Digitick\Sepa\PaymentInformation;
+use Digitick\Sepa\TransferInformation\CustomerCreditTransferInformation;
 
 /**
  * SEPA file generator.
@@ -36,5 +40,21 @@ class CustomerCreditTransferFile extends BaseTransferFile {
         // TODO refactor as this will overwrite the payment method
         $paymentInformation->setPaymentMethod('TRF');
         parent::addPaymentInformation($paymentInformation);
+    }
+
+    /**
+     * validate the transferfile
+     *
+     * @throws \Digitick\Sepa\Exception\InvalidTransferTypeException
+     */
+    public function validate() {
+        /** @var $payment PaymentInformation */
+        foreach($this->paymentInformations as $payment) {
+            foreach($payment->getTransfers() as $transfer) {
+                if(!$transfer instanceof CustomerCreditTransferInformation) {
+                    throw new InvalidTransferTypeException('Transfers must be of type CustomerCreditTransferInformation instead of: ' . get_class($transfer));
+                }
+            }
+        }
     }
 }

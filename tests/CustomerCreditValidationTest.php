@@ -3,7 +3,11 @@
 namespace Tests;
 
 use Digitick\Sepa\CustomerCredit;
+use Digitick\Sepa\DomBuilder\CustomerCreditTransferDomBuilder;
 use Digitick\Sepa\GroupHeader;
+use Digitick\Sepa\PaymentInformation;
+use Digitick\Sepa\TransferFile\CustomerCreditTransferFile;
+use Digitick\Sepa\TransferInformation\CustomerCreditTransferInformation;
 
 /**
  * Various schema validation tests.
@@ -19,7 +23,7 @@ class CustomerCreditValidationTest extends \PHPUnit_Framework_TestCase
 	
 	protected function setUp()
 	{
-		$this->schema = __DIR__ . "/pain.001.001.03.xsd";
+		$this->schema = __DIR__ . "/pain.001.001.05.xsd";
 		$this->dom = new \DOMDocument('1.0', 'UTF-8');
 	} 
 
@@ -28,7 +32,7 @@ class CustomerCreditValidationTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSanity()
 	{
-		$this->dom->load(__DIR__ . '/pain.001.001.03.xml');
+		$this->dom->load(__DIR__ . '/pain.001.001.05.xml');
 		$validated = $this->dom->schemaValidate($this->schema);
 		$this->assertTrue($validated);
 	}
@@ -38,26 +42,24 @@ class CustomerCreditValidationTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSinglePaymentSingleTrans()
 	{
+
+        $domBuilder = new CustomerCreditTransferDomBuilder();
+
         $groupHeader = new GroupHeader('transferID', 'Me');
-		$sepaFile = new CustomerCredit($groupHeader);
-		
-		$payment = $sepaFile->addPaymentInfo(array(
-			'id'                    => 'Payment Info ID',
-			'debtorName'            => 'My Corp',
-			'debtorAccountIBAN'     => 'FR1420041010050500013M02606',
-			'debtorAgentBIC'        => 'PSSTFRPPMON'
-		));
-		$payment->addCreditTransfer(array(
-			'id'                    => 'Id shown in bank statement',
-			'currency'              => 'EUR',
-			'amount'                => '0.02',
-			'creditorName'          => 'Their Corp',
-			'creditorAccountIBAN'   => 'FI1350001540000056',
-			'creditorBIC'           => 'OKOYFIHH',
-			'remittanceInformation' => 'Transaction description',
-		));
-		
-		$this->dom->loadXML($sepaFile->asXML());
+        $sepaFile = new CustomerCreditTransferFile($groupHeader);
+
+        $transfer = new CustomerCreditTransferInformation('0.02', 'FI1350001540000056', 'Their Corp');
+        $transfer->setBic('OKOYFIHH');
+        $transfer->setRemittanceInformation('Transaction Description');
+
+        $payment = new PaymentInformation('Payment Info ID', 'FR1420041010050500013M02606', 'PSSTFRPPMON', 'My Corp');
+		$payment->addTransfer($transfer);
+
+        $sepaFile->addPaymentInformation($payment);
+
+        $sepaFile->accept($domBuilder);
+
+		$this->dom->loadXML($domBuilder->asXml());
 		
 		$validated = $this->dom->schemaValidate($this->schema);
 		$this->assertTrue($validated);

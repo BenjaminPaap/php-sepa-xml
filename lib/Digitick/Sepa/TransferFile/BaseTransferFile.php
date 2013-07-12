@@ -1,6 +1,7 @@
 <?php
 
 namespace Digitick\Sepa\TransferFile;
+use Digitick\Sepa\DomBuilder\DomBuilderInterface;
 use Digitick\Sepa\GroupHeader;
 use Digitick\Sepa\PaymentInformation;
 
@@ -55,6 +56,18 @@ abstract class BaseTransferFile implements TransferFileInterface {
      */
     public function addPaymentInformation(PaymentInformation $paymentInformation) {
         $this->paymentInformations[] = $paymentInformation;
+    }
+
+    /**
+     * @param DomBuilderInterface $domBuilder
+     */
+    public function accept(DomBuilderInterface $domBuilder) {
+        $domBuilder->visitTransferFile($this);
+        $this->groupHeader->accept($domBuilder);
+        /** @var $paymentInformation PaymentInformation */
+        foreach($this->paymentInformations as $paymentInformation) {
+            $paymentInformation->accept($domBuilder);
+        }
     }
 
 }

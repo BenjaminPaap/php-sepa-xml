@@ -1,6 +1,7 @@
 <?php
 
 namespace Digitick\Sepa;
+use Digitick\Sepa\DomBuilder\DomBuilderInterface;
 
 /**
  * User: s.rohweder@blage.net
@@ -46,6 +47,11 @@ class GroupHeader extends FileBlock {
     protected $initiatingPartyName;
 
     /**
+     * @var \DateTime
+     */
+    protected $creationDateTime;
+
+    /**
      * @param $messageIdentification
      * @param $isTest
      * @param $initiatingPartyName
@@ -54,8 +60,12 @@ class GroupHeader extends FileBlock {
         $this->messageIdentification = $messageIdentification;
         $this->isTest = $isTest;
         $this->initiatingPartyName = $initiatingPartyName;
+        $this->creationDateTime = new \DateTime();
     }
 
+    public function accept(DomBuilderInterface $domBuilder) {
+        $domBuilder->visitGroupHeader($this);
+    }
     /**
      * @return \SimpleXMLElement
      */
@@ -182,5 +192,13 @@ class GroupHeader extends FileBlock {
     public function getNumberOfTransactions() {
         return $this->numberOfTransactions;
     }
+
+    /**
+     * @return \DateTime
+     */
+    public function getCreationDateTime() {
+        return $this->creationDateTime->format('Y-m-d\TH:i:s');
+    }
+
 
 }
