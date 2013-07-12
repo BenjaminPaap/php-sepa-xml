@@ -32,6 +32,8 @@ abstract class BaseDomBuilder implements DomBuilderInterface {
 
     protected $currentTransfer = null;
 
+    protected $currentPayment = null;
+
     function __construct($painFormat) {
         $this->doc = new \DOMDocument('1.0', 'UTF-8');
         $this->doc->formatOutput = true;
@@ -47,7 +49,11 @@ abstract class BaseDomBuilder implements DomBuilderInterface {
      * @return \DOMElement
      */
     protected function createElement($name, $value = null) {
-        return $this->doc->createElement($name, $value);
+        if($value){
+            return $this->doc->createElement($name, $value);
+        } else {
+            return $this->doc->createElement($name);
+        }
     }
 
     /**
@@ -55,5 +61,13 @@ abstract class BaseDomBuilder implements DomBuilderInterface {
      */
     public function asXml(){
         return $this->doc->saveXML();
+    }
+
+    /**
+     * Format an integer as a monetary value.
+     */
+    protected function intToCurrency($amount)
+    {
+        return sprintf("%01.2f", ($amount / 100));
     }
 }

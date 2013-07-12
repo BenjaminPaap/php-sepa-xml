@@ -109,6 +109,7 @@ class PaymentInformation {
         $this->originAgentBIC = $originAgentBIC;
         $this->originName = $originName;
         $this->originAccountCurrency = $originAccountCurrency;
+        $this->dueDate = new \DateTime();
     }
 
 
@@ -159,7 +160,7 @@ class PaymentInformation {
      */
     public function setLocalInstrumentCode($localInstrumentCode) {
         $localInstrumentCode = strtoupper($localInstrumentCode);
-        if (!in_array($localInstrumentCode, array('B"B', 'CORE'))) {
+        if (!in_array($localInstrumentCode, array('B2B', 'CORE'))) {
             throw new InvalidLocalInstrumentMethodException("Invalid Local Instrument Code: $localInstrumentCode");
         }
         $this->localInstrumentCode = $localInstrumentCode;
@@ -197,7 +198,7 @@ class PaymentInformation {
      * @return \DateTime
      */
     public function getDueDate() {
-        return $this->dueDate;
+        return $this->dueDate->format('Y-m-d');
     }
 
     /**
@@ -282,5 +283,33 @@ class PaymentInformation {
      */
     public function getId() {
         return $this->id;
+    }
+
+    /**
+     * @return int
+     */
+    public function getControlSumCents() {
+        return $this->controlSumCents;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLocalInstrumentCode() {
+        return $this->localInstrumentCode;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumberOfTransactions() {
+        return $this->numberOfTransactions;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPaymentMethod() {
+        return $this->paymentMethod;
     }
 }

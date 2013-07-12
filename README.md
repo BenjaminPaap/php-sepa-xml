@@ -5,7 +5,7 @@ SEPA file generator for PHP.
 
 Creates an XML file for a Single Euro Payments Area (SEPA) Credit Transfer.
 
-The version of the standard followed is: _pain.001.001.03_
+The version of the standard followed is: _pain.001.001.05_
 
 License: GNU Lesser General Public License v3.0
 
@@ -17,43 +17,34 @@ Verify generated files with your bank before using!!!
 
 ##Usage
 ```php
-$sepaFile = new SepaTransferFile();
-$sepaFile->messageIdentification = 'transferID';
-$sepaFile->initiatingPartyName = 'Me';
+// Create the initiating information
+$groupHeader = new GroupHeader('SEPA File Identifier', 'Your Company Name');
+$sepaFile = new CustomerCreditTransferFile($groupHeader);
 
-/* 
- * Add a payment to the SEPA file. This method
- * may be called more than once to add multiple
- * payments to the same file.
- */
-$payment1 = $sepaFile->addPaymentInfo(array(
-	'id'					=> 'Payment Info ID',
-	'debtorName'			=> 'My Corp',
-	'debtorAccountIBAN'		=> 'MY_ACCOUNT_IBAN',
-	'debtorAgentBIC'		=> 'MY_BANK_BIC'
-//	'debtorAccountCurrency'	=> 'GPB', // optional, defaults to 'EUR'
-//	'categoryPurposeCode'	=> 'SUPP', // optional, defaults to NULL
-));
+$transfer = new CustomerCreditTransferInformation(
+    '0.02', // Amount
+    'FI1350001540000056', //IBAN of creditor
+    'Their Corp' //Name of Creditor
+    );
+$transfer->setBic('OKOYFIHH'); // Set the BIC explicitly
+$transfer->setRemittanceInformation('Transaction Description');
 
-/* 
- * Add a credit transfer to the payment. This method
- * may be called more than once to add multiple
- * transfers for the same payment.
- */
-$payment1->addCreditTransfer(array(
-	'id'					=> 'Id shown in bank statement',
-	'currency'				=> 'EUR',
-	'amount'				=> '0.02', // or as float: 0.02 or as integer: 2
-	'creditorBIC'			=> 'THEIR_BANK_BIC',
-	'creditorName'			=> 'THEIR_NAME',
-	'creditorAccountIBAN'	=> 'THEIR_IBAN',
-	'remittanceInformation'	=> 'Transaction description',
-));
+// Create a PaymentInformation the Transfer belongs to
+$payment = new PaymentInformation(
+    'Payment Info ID',
+    'FR1420041010050500013M02606', // IBAN the money is transferred from
+    'PSSTFRPPMON',  // BIC
+    'My Corp' // Debitor Name
+    );
+// It's allowed to add multiple Transfers in one Payment
+$payment->addTransfer($transfer);
 
-/* Generate the file and return the XML string. */
-echo $sepaFile->asXML();
+// It's allowed to add multiple payments to one SEPA File
+$sepaFile->addPaymentInformation($payment);
 
-/* After generating the file, these two values can be retrieved: */
-echo $sepaFile->getHeaderControlSumCents();
-echo $payment1->getPaymentControlSumCents();
+// The DOMBuilder will be moved to a factory later
+$domBuilder = new CustomerCreditTransferDomBuilder();
+$sepaFile->accept($domBuilder);
+
+$domBuilder->asXml();
 ```

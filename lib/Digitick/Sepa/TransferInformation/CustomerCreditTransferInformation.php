@@ -83,19 +83,17 @@ class CustomerCreditTransferInformation extends BaseTransferInformation {
     protected $remittanceInformation;
 
     /**
-     * @var
-     */
-    protected $currency;
-
-    /**
      * @param string $amount
      * @param string $iban
      * @param string $creditorName
      */
     function __construct($amount, $iban, $creditorName) {
-        $this->amount = $amount;
+        $this->amount = (float)$amount * 100;
         $this->iban = $iban;
         $this->creditorName = $creditorName;
+        // FIXME broken implementation find suitable IDs
+        $this->instructionId = $creditorName;
+        $this->EndToEndIdentification = $creditorName;
     }
 
 
@@ -237,20 +235,6 @@ class CustomerCreditTransferInformation extends BaseTransferInformation {
      */
     public function getPaymentId() {
         return $this->paymentId;
-    }
-
-    /**
-     * @param mixed $currency
-     */
-    public function setCurrency($currency) {
-        $this->currency = $currency;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCurrency() {
-        return $this->currency;
     }
 
     /**

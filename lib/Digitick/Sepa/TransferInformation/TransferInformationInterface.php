@@ -29,4 +29,6 @@ interface TransferInformationInterface {
     public function accept(DomBuilderInterface $domBuilder);
 
     public function getTransferAmount();
+
+
 }

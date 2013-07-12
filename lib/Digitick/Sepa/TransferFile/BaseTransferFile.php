@@ -62,12 +62,29 @@ abstract class BaseTransferFile implements TransferFileInterface {
      * @param DomBuilderInterface $domBuilder
      */
     public function accept(DomBuilderInterface $domBuilder) {
+        $this->updateGroupHeader();
         $domBuilder->visitTransferFile($this);
         $this->groupHeader->accept($domBuilder);
         /** @var $paymentInformation PaymentInformation */
         foreach($this->paymentInformations as $paymentInformation) {
             $paymentInformation->accept($domBuilder);
         }
+    }
+
+    /**
+     * update the group header with transaction informations collected
+     * by paymentinformation
+     */
+    protected function updateGroupHeader() {
+        /** @var $paymentInformation PaymentInformation */
+        $numberOfTransaction = 0;
+        $transactionTotal = 0;
+        foreach($this->paymentInformations as $paymentInformation) {
+            $numberOfTransaction += $paymentInformation->getNumberOfTransactions();
+            $transactionTotal += $paymentInformation->getControlSumCents();
+        }
+        $this->groupHeader->setNumberOfTransactions($numberOfTransaction);
+        $this->groupHeader->getControlSumCents($transactionTotal);
     }
 
 }

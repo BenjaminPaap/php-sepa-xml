@@ -4,6 +4,7 @@ namespace Digitick\Sepa\DomBuilder;
 use Digitick\Sepa\PaymentInformation;
 use Digitick\Sepa\TransferFile\TransferFileInterface;
 use Digitick\Sepa\GroupHeader;
+use Digitick\Sepa\TransferInformation\CustomerCreditTransferInformation;
 use Digitick\Sepa\TransferInformation\TransferInformationInterface;
 
 /**
@@ -57,7 +58,7 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
         $creationDateTime = $this->createElement('CreDtTm', $groupHeader->getCreationDateTime());
         $groupHeaderTag->appendChild($creationDateTime);
         $groupHeaderTag->appendChild($this->createElement('NbOfTxs', $groupHeader->getNumberOfTransactions()));
-        $groupHeaderTag->appendChild($this->createElement('CtrlSum', $groupHeader->getControlSumCents()));
+        $groupHeaderTag->appendChild($this->createElement('CtrlSum', $this->intToCurrency($groupHeader->getControlSumCents())));
         if($groupHeader->getIsTest()) {
             $authstn = $this->createElement('Authstn');
             $authstn->appendChild($this->createElement('Prtry', 'TEST'));
@@ -81,7 +82,51 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
      * @return mixed
      */
     public function visitPaymentInformation(PaymentInformation $paymentInformation) {
-        // TODO: Implement visitPaymentInformation() method.
+        $this->currentPayment = $this->createElement('PmtInf');
+        $this->currentPayment->appendChild($this->createElement('PmtInfId', $paymentInformation->getId()));
+        if ($paymentInformation->getCategoryPurposeCode()) {
+            $categoryPurpose = $this->createElement('CtgyPurp');
+            $categoryPurpose->appendChild($this->createElement('Cd', $paymentInformation->getCategoryPurposeCode()));
+            $this->currentPayment->appendChild($categoryPurpose);
+        }
+        $this->currentPayment->appendChild($this->createElement('PmtMtd', $paymentInformation->getPaymentMethod()));
+        $this->currentPayment->appendChild($this->createElement('NbOfTxs', $paymentInformation->getNumberOfTransactions()));
+
+        $this->currentPayment->appendChild($this->createElement('CtrlSum', $this->intToCurrency($paymentInformation->getControlSumCents())));
+
+        $paymentTypeInformation = $this->createElement('PmtTpInf');
+        $serviceLevel = $this->createElement('SvcLvl');
+        $serviceLevel->appendChild($this->createElement('Cd', 'SEPA'));
+        $paymentTypeInformation->appendChild($serviceLevel);
+        $this->currentPayment->appendChild($paymentTypeInformation);
+        if ($paymentInformation->getLocalInstrumentCode()) {
+            $localInstrument = $this->createElement('LclInstr');
+            $localInstrument->appendChild($this->createElement('Cd', $paymentInformation->getLocalInstrumentCode()));
+            $this->currentPayment->appendChild($localInstrument);
+        }
+
+        $this->currentPayment->appendChild($this->createElement('ReqdExctnDt', $paymentInformation->getDueDate()));
+        $debtor = $this->createElement('Dbtr');
+        $debtor->appendChild($this->createElement('Nm', htmlentities($paymentInformation->getOriginName())));
+        $this->currentPayment->appendChild($debtor);
+
+        // TODO missing SeqTp (SequenceType 2.14)
+        $debtorAccount = $this->createElement('DbtrAcct');
+        $id = $this->createElement('Id');
+        $id->appendChild($this->createElement('IBAN', $paymentInformation->getOriginAccountIBAN()));
+        $debtorAccount->appendChild($id);
+        if($paymentInformation->getOriginAccountCurrency()) {
+            $debtorAccount->appendChild($this->createElement('Ccy', $paymentInformation->getOriginAccountCurrency()));
+        }
+        $this->currentPayment->appendChild($debtorAccount);
+
+        $debtorAgent = $this->createElement('DbtrAgt');
+        $financialInstitutionId = $this->createElement('FinInstnId');
+        $financialInstitutionId->appendChild($this->createElement('BICFI', $paymentInformation->getOriginAgentBIC()));
+        $debtorAgent->appendChild($financialInstitutionId);
+        $this->currentPayment->appendChild($debtorAgent);
+        $this->currentPayment->appendChild($this->createElement('ChrgBr','SLEV'));
+        $this->currentTransfer->appendChild($this->currentPayment);
     }
 
     /**
@@ -91,7 +136,46 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
      * @return mixed
      */
     public function visitTransferInformation(TransferInformationInterface $transactionInformation) {
-        // TODO: Implement visitTransferInformation() method.
+        /** @var $transactionInformation  CustomerCreditTransferInformation */
+        $CdtTrfTxInf = $this->createElement('CdtTrfTxInf');
+
+        // Payment ID 2.28
+        $PmtId = $this->createElement('PmtId');
+        $PmtId->appendChild($this->createElement('InstrId', $transactionInformation->getInstructionId()));
+        $PmtId->appendChild($this->createElement('EndToEndId', $transactionInformation->getEndToEndIdentification()));
+        $CdtTrfTxInf->appendChild($PmtId);
+
+        // Amount 2.42
+        $amount = $this->createElement('Amt');
+        $instructedAmount = $this->createElement('InstdAmt', $this->intToCurrency($transactionInformation->getAmount()));
+        $instructedAmount->setAttribute('Ccy', $transactionInformation->getCurrency());
+        $amount->appendChild($instructedAmount);
+        $CdtTrfTxInf->appendChild($amount);
+
+        //Creditor Agent 2.77
+        $creditorAgent = $this->createElement('CdtrAgt');
+        $financialInstitution = $this->createElement('FinInstnId');
+        $financialInstitution->appendChild($this->createElement('BICFI', $transactionInformation->getBic()));
+        $creditorAgent->appendChild($financialInstitution);
+        $CdtTrfTxInf->appendChild($creditorAgent);
+
+        // Creditor 2.79
+        $creditor = $this->createElement('Cdtr');
+        $creditor->appendChild($this->createElement('Nm', htmlentities($transactionInformation->getCreditorName())));
+
+        // CreditorAccount 2.80
+        $creditorAccount = $this->createElement('CdtrAcct');
+        $id = $this->createElement('Id');
+        $id->appendChild($this->createElement('IBAN', $transactionInformation->getIban()));
+        $creditorAccount->appendChild($id);
+        $CdtTrfTxInf->appendChild($creditorAccount);
+
+        // remittance 2.98 2.99
+        $remittanceInformation = $this->createElement('RmtInf');
+        $remittanceInformation->appendChild($this->createElement('Ustrd', $transactionInformation->getRemittanceInformation()));
+        $CdtTrfTxInf->appendChild($remittanceInformation);
+
+        $this->currentPayment->appendChild($CdtTrfTxInf);
     }
 
 }

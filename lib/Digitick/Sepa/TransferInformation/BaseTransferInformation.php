@@ -32,6 +32,11 @@ class BaseTransferInformation implements TransferInformationInterface{
     protected $transferAmount;
 
     /**
+     * @var
+     */
+    protected $currency = 'EUR';
+
+    /**
      * @param DomBuilderInterface $domBuilder
      */
     public function accept(DomBuilderInterface $domBuilder) {
@@ -44,4 +49,19 @@ class BaseTransferInformation implements TransferInformationInterface{
     public function getTransferAmount() {
         return $this->transferAmount;
     }
+
+    /**
+     * @param mixed $currency
+     */
+    public function setCurrency($currency) {
+        $this->currency = $currency;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCurrency() {
+        return $this->currency;
+    }
+
 }
