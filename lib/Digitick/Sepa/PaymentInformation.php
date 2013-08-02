@@ -36,18 +36,22 @@ class PaymentInformation {
      * @var string Unambiguously identify the payment.
      */
     public $id;
+
     /**
      * @var string Purpose of the transaction(s).
      */
     public $categoryPurposeCode;
+
     /**
      * @var string Debtor's name.
      */
     public $originName;
+
     /**
      * @var string Debtor's account IBAN.
      */
     public $originAccountIBAN;
+
     /**
      * @var string Debtor's account bank BIC code.
      */
@@ -150,7 +154,7 @@ class PaymentInformation {
     public function setPaymentMethod($method) {
         $method = strtoupper($method);
         if (!in_array($method, $this->validPaymentMethods)) {
-            throw new InvalidPaymentMethodException("Invalid Payment Method: $method, must be one of " . implode(',', $this->validPaymentMethods));
+            throw new InvalidArgumentException("Invalid Payment Method: $method, must be one of " . implode(',', $this->validPaymentMethods));
         }
         $this->paymentMethod = $method;
     }
@@ -161,7 +165,7 @@ class PaymentInformation {
     public function setLocalInstrumentCode($localInstrumentCode) {
         $localInstrumentCode = strtoupper($localInstrumentCode);
         if (!in_array($localInstrumentCode, array('B2B', 'CORE'))) {
-            throw new InvalidLocalInstrumentMethodException("Invalid Local Instrument Code: $localInstrumentCode");
+            throw new InvalidArgumentException("Invalid Local Instrument Code: $localInstrumentCode");
         }
         $this->localInstrumentCode = $localInstrumentCode;
     }

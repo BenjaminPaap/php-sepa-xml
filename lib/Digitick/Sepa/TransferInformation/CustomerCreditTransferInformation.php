@@ -25,13 +25,6 @@ namespace Digitick\Sepa\TransferInformation;
 class CustomerCreditTransferInformation extends BaseTransferInformation {
 
     /**
-     * Must be between 0.01 and 999999999.99
-     *
-     * @var string
-     */
-    protected $amount;
-
-    /**
      * @var string
      */
     protected $instructionId;
@@ -88,7 +81,7 @@ class CustomerCreditTransferInformation extends BaseTransferInformation {
      * @param string $creditorName
      */
     function __construct($amount, $iban, $creditorName) {
-        $this->amount = (float)$amount * 100;
+        $this->transferAmount = (float)$amount * 100;
         $this->iban = $iban;
         $this->creditorName = $creditorName;
         // FIXME broken implementation find suitable IDs
@@ -109,20 +102,6 @@ class CustomerCreditTransferInformation extends BaseTransferInformation {
      */
     public function getEndToEndIdentification() {
         return $this->EndToEndIdentification;
-    }
-
-    /**
-     * @param string $amount
-     */
-    public function setAmount($amount) {
-        $this->amount = $amount;
-    }
-
-    /**
-     * @return string
-     */
-    public function getAmount() {
-        return $this->amount;
     }
 
     /**

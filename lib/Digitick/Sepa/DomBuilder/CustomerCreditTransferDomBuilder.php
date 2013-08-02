@@ -30,7 +30,7 @@ use Digitick\Sepa\TransferInformation\TransferInformationInterface;
 class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
 
     function __construct() {
-        parent::__construct('pain.001.001.05');
+        parent::__construct('pain.001.002.03');
     }
 
 
@@ -122,7 +122,7 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
 
         $debtorAgent = $this->createElement('DbtrAgt');
         $financialInstitutionId = $this->createElement('FinInstnId');
-        $financialInstitutionId->appendChild($this->createElement('BICFI', $paymentInformation->getOriginAgentBIC()));
+        $financialInstitutionId->appendChild($this->createElement('BIC', $paymentInformation->getOriginAgentBIC()));
         $debtorAgent->appendChild($financialInstitutionId);
         $this->currentPayment->appendChild($debtorAgent);
         $this->currentPayment->appendChild($this->createElement('ChrgBr','SLEV'));
@@ -147,7 +147,7 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
 
         // Amount 2.42
         $amount = $this->createElement('Amt');
-        $instructedAmount = $this->createElement('InstdAmt', $this->intToCurrency($transactionInformation->getAmount()));
+        $instructedAmount = $this->createElement('InstdAmt', $this->intToCurrency($transactionInformation->getTransferAmount()));
         $instructedAmount->setAttribute('Ccy', $transactionInformation->getCurrency());
         $amount->appendChild($instructedAmount);
         $CdtTrfTxInf->appendChild($amount);
@@ -155,13 +155,14 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
         //Creditor Agent 2.77
         $creditorAgent = $this->createElement('CdtrAgt');
         $financialInstitution = $this->createElement('FinInstnId');
-        $financialInstitution->appendChild($this->createElement('BICFI', $transactionInformation->getBic()));
+        $financialInstitution->appendChild($this->createElement('BIC', $transactionInformation->getBic()));
         $creditorAgent->appendChild($financialInstitution);
         $CdtTrfTxInf->appendChild($creditorAgent);
 
         // Creditor 2.79
         $creditor = $this->createElement('Cdtr');
         $creditor->appendChild($this->createElement('Nm', htmlentities($transactionInformation->getCreditorName())));
+        $CdtTrfTxInf->appendChild($creditor);
 
         // CreditorAccount 2.80
         $creditorAccount = $this->createElement('CdtrAcct');

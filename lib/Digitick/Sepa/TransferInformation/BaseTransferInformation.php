@@ -25,9 +25,15 @@ use Digitick\Sepa\DomBuilder\DomBuilderInterface;
 
 class BaseTransferInformation implements TransferInformationInterface{
 
-    protected $paymentId;
     /**
-     * @var
+     * @var string
+     */
+    protected $paymentId;
+
+    /**
+     * Must be between 0.01 and 999999999.99
+     *
+     * @var string
      */
     protected $transferAmount;
 

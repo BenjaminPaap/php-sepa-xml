@@ -1,7 +1,6 @@
 <?php
 namespace Tests;
 
-use Digitick\Sepa\CustomerCredit;
 use Digitick\Sepa\GroupHeader;
 
 /**
@@ -20,7 +19,7 @@ class CustomerDirectDebitValidationTest extends \PHPUnit_Framework_TestCase {
     protected $dom;
 
     protected function setUp() {
-        $this->schema = __DIR__ . "/pain.008.001.04.xsd";
+        $this->schema = __DIR__ . "/pain.008.002.02.xsd";
         $this->dom = new \DOMDocument('1.0', 'UTF-8');
     }
 
@@ -28,7 +27,7 @@ class CustomerDirectDebitValidationTest extends \PHPUnit_Framework_TestCase {
      * Sanity check: test reference file with XSD.
      */
     public function testSanity() {
-        $this->dom->load(__DIR__ . '/pain.008.001.04.xml');
+        $this->dom->load(__DIR__ . '/pain.008.002.02.xml');
         $validated = $this->dom->schemaValidate($this->schema);
         $this->assertTrue($validated);
     }

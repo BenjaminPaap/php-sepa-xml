@@ -2,6 +2,7 @@
 
 namespace Digitick\Sepa\TransferFile;
 use Digitick\Sepa\DomBuilder\DomBuilderInterface;
+use Digitick\Sepa\Exception\InvalidTransferFileConfiguration;
 use Digitick\Sepa\GroupHeader;
 use Digitick\Sepa\PaymentInformation;
 
@@ -76,15 +77,20 @@ abstract class BaseTransferFile implements TransferFileInterface {
      * by paymentinformation
      */
     protected function updateGroupHeader() {
-        /** @var $paymentInformation PaymentInformation */
         $numberOfTransaction = 0;
         $transactionTotal = 0;
+
+        if(count($this->paymentInformations) === 0) {
+            throw new InvalidTransferFileConfiguration('No paymentinformations available, add paymentInformation via addPaymentInformation()');
+        }
+
+        /** @var $paymentInformation PaymentInformation */
         foreach($this->paymentInformations as $paymentInformation) {
             $numberOfTransaction += $paymentInformation->getNumberOfTransactions();
             $transactionTotal += $paymentInformation->getControlSumCents();
         }
         $this->groupHeader->setNumberOfTransactions($numberOfTransaction);
-        $this->groupHeader->getControlSumCents($transactionTotal);
+        $this->groupHeader->setControlSumCents($transactionTotal);
     }
 
 }
