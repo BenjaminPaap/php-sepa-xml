@@ -44,6 +44,7 @@ class CustomerCreditTransferFile extends BaseTransferFile {
      * @throws \Digitick\Sepa\Exception\InvalidTransferTypeException
      */
     public function validate() {
+        parent::validate();
         /** @var $payment PaymentInformation */
         foreach($this->paymentInformations as $payment) {
             foreach($payment->getTransfers() as $transfer) {

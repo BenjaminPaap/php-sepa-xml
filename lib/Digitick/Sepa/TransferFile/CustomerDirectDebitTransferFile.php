@@ -45,6 +45,7 @@ class CustomerDirectDebitTransferFile extends BaseTransferFile {
      * @throws \Digitick\Sepa\Exception\InvalidTransferTypeException
      */
     public function validate() {
+        parent::validate();
         /** @var $payment PaymentInformation */
         foreach($this->paymentInformations as $payment) {
             if((string)$payment->getSequenceType() === '') {

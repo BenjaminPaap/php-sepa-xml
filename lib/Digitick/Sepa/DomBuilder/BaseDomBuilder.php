@@ -88,7 +88,7 @@ abstract class BaseDomBuilder implements DomBuilderInterface {
         $groupHeaderTag = $this->doc->createElement('GrpHdr');
         $messageId = $this->createElement('MsgId', $groupHeader->getMessageIdentification());
         $groupHeaderTag->appendChild($messageId);
-        $creationDateTime = $this->createElement('CreDtTm', $groupHeader->getCreationDateTime());
+        $creationDateTime = $this->createElement('CreDtTm', $groupHeader->getCreationDateTime()->format('Y-m-d\TH:i:s\Z'));
         $groupHeaderTag->appendChild($creationDateTime);
         $groupHeaderTag->appendChild($this->createElement('NbOfTxs', $groupHeader->getNumberOfTransactions()));
         $groupHeaderTag->appendChild($this->createElement('CtrlSum', $this->intToCurrency($groupHeader->getControlSumCents())));

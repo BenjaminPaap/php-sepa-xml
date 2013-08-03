@@ -56,6 +56,10 @@ abstract class BaseTransferFile implements TransferFileInterface {
      * @param PaymentInformation $paymentInformation
      */
     public function addPaymentInformation(PaymentInformation $paymentInformation) {
+        $numberOfTransactions = $this->getGroupHeader()->getNumberOfTransactions() + $paymentInformation->getNumberOfTransactions();
+        $transactionTotal = $this->getGroupHeader()->getControlSumCents() + $paymentInformation->getControlSumCents();
+        $this->groupHeader->setNumberOfTransactions($numberOfTransactions);
+        $this->groupHeader->setControlSumCents($transactionTotal);
         $this->paymentInformations[] = $paymentInformation;
     }
 
@@ -63,7 +67,6 @@ abstract class BaseTransferFile implements TransferFileInterface {
      * @param DomBuilderInterface $domBuilder
      */
     public function accept(DomBuilderInterface $domBuilder) {
-        $this->updateGroupHeader();
         $this->validate();
         $domBuilder->visitTransferFile($this);
         $this->groupHeader->accept($domBuilder);
@@ -77,21 +80,10 @@ abstract class BaseTransferFile implements TransferFileInterface {
      * update the group header with transaction informations collected
      * by paymentinformation
      */
-    protected function updateGroupHeader() {
-        $numberOfTransaction = 0;
-        $transactionTotal = 0;
-
+    public function validate() {
         if(count($this->paymentInformations) === 0) {
             throw new InvalidTransferFileConfiguration('No paymentinformations available, add paymentInformation via addPaymentInformation()');
         }
-
-        /** @var $paymentInformation PaymentInformation */
-        foreach($this->paymentInformations as $paymentInformation) {
-            $numberOfTransaction += $paymentInformation->getNumberOfTransactions();
-            $transactionTotal += $paymentInformation->getControlSumCents();
-        }
-        $this->groupHeader->setNumberOfTransactions($numberOfTransaction);
-        $this->groupHeader->setControlSumCents($transactionTotal);
     }
 
 }
