@@ -24,11 +24,10 @@ namespace Digitick\Sepa\TransferInformation;
 
 class CustomerDirectDebitTransferInformation extends BaseTransferInformation {
 
-
     /**
      * @var string
      */
-    protected $sequenceType;
+    protected $mandateId;
 
     /**
      * @var \DateTime
@@ -41,17 +40,64 @@ class CustomerDirectDebitTransferInformation extends BaseTransferInformation {
     protected $finalCollectionDate;
 
     /**
-     * @param string $sequenceType
+     * @param string $amount
+     * @param string $iban
+     * @param string $name
      */
-    public function setSequenceType($sequenceType) {
-        $this->sequenceType = $sequenceType;
+    function __construct($amount, $iban, $name) {
+        parent::__construct($amount, $iban, $name);
+        // FIXME broken implementation find suitable IDs
+        $this->EndToEndIdentification = $name;
+    }
+
+    /**
+     * @param \DateTime $finalCollectionDate
+     */
+    public function setFinalCollectionDate($finalCollectionDate) {
+        $this->finalCollectionDate = $finalCollectionDate;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getFinalCollectionDate() {
+        return $this->finalCollectionDate;
+    }
+
+    /**
+     * @param string $mandateId
+     */
+    public function setMandateId($mandateId) {
+        $this->mandateId = $mandateId;
     }
 
     /**
      * @return string
      */
-    public function getSequenceType() {
-        return $this->sequenceType;
+    public function getMandateId() {
+        return $this->mandateId;
     }
+
+    /**
+     * @param \DateTime $mandateSignDate
+     */
+    public function setMandateSignDate($mandateSignDate) {
+        $this->mandateSignDate = $mandateSignDate;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getMandateSignDate() {
+        return $this->mandateSignDate;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDebitorName() {
+        return $this->name;
+    }
+
 
 }

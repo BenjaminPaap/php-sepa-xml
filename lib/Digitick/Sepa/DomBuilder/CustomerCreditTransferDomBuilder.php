@@ -2,6 +2,7 @@
 
 namespace Digitick\Sepa\DomBuilder;
 use Digitick\Sepa\PaymentInformation;
+use Digitick\Sepa\TransferFile\CustomerCreditTransferFile;
 use Digitick\Sepa\TransferFile\TransferFileInterface;
 use Digitick\Sepa\GroupHeader;
 use Digitick\Sepa\TransferInformation\CustomerCreditTransferInformation;
@@ -30,7 +31,7 @@ use Digitick\Sepa\TransferInformation\TransferInformationInterface;
 class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
 
     function __construct() {
-        parent::__construct('pain.001.002.03');
+        parent::__construct(CustomerCreditTransferFile::PAIN_FORMAT);
     }
 
 
@@ -43,36 +44,6 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
     public function visitTransferFile(TransferFileInterface $transferFile) {
         $this->currentTransfer = $this->doc->createElement('CstmrCdtTrfInitn');
         $this->root->appendChild($this->currentTransfer);
-    }
-
-    /**
-     * Add GroupHeader Information to the document
-     *
-     * @param GroupHeader $groupHeader
-     * @return mixed
-     */
-    public function visitGroupHeader(GroupHeader $groupHeader) {
-        $groupHeaderTag = $this->doc->createElement('GrpHdr');
-        $messageId = $this->createElement('MsgId', $groupHeader->getMessageIdentification());
-        $groupHeaderTag->appendChild($messageId);
-        $creationDateTime = $this->createElement('CreDtTm', $groupHeader->getCreationDateTime());
-        $groupHeaderTag->appendChild($creationDateTime);
-        $groupHeaderTag->appendChild($this->createElement('NbOfTxs', $groupHeader->getNumberOfTransactions()));
-        $groupHeaderTag->appendChild($this->createElement('CtrlSum', $this->intToCurrency($groupHeader->getControlSumCents())));
-        if($groupHeader->getIsTest()) {
-            $authstn = $this->createElement('Authstn');
-            $authstn->appendChild($this->createElement('Prtry', 'TEST'));
-            $groupHeaderTag->appendChild($authstn);
-        }
-        $initiatingParty = $this->createElement('InitgPty');
-        $initiatingPartyName =  $this->createElement('Nm', $groupHeader->getInitiatingPartyName());
-        $initiatingParty->appendChild($initiatingPartyName);
-        if ($groupHeader->getInitiatingPartyId() !== null) {
-            $id = $this->createElement('Id', $groupHeader->getInitiatingPartyId());
-            $initiatingParty->appendChild($id);
-        }
-        $groupHeaderTag->appendChild($initiatingParty);
-        $this->currentTransfer->appendChild($groupHeaderTag);
     }
 
     /**
@@ -110,7 +81,6 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
         $debtor->appendChild($this->createElement('Nm', htmlentities($paymentInformation->getOriginName())));
         $this->currentPayment->appendChild($debtor);
 
-        // TODO missing SeqTp (SequenceType 2.14)
         $debtorAccount = $this->createElement('DbtrAcct');
         $id = $this->createElement('Id');
         $id->appendChild($this->createElement('IBAN', $paymentInformation->getOriginAccountIBAN()));
@@ -125,6 +95,7 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
         $financialInstitutionId->appendChild($this->createElement('BIC', $paymentInformation->getOriginAgentBIC()));
         $debtorAgent->appendChild($financialInstitutionId);
         $this->currentPayment->appendChild($debtorAgent);
+
         $this->currentPayment->appendChild($this->createElement('ChrgBr','SLEV'));
         $this->currentTransfer->appendChild($this->currentPayment);
     }
@@ -141,7 +112,6 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
 
         // Payment ID 2.28
         $PmtId = $this->createElement('PmtId');
-        $PmtId->appendChild($this->createElement('InstrId', $transactionInformation->getInstructionId()));
         $PmtId->appendChild($this->createElement('EndToEndId', $transactionInformation->getEndToEndIdentification()));
         $CdtTrfTxInf->appendChild($PmtId);
 
@@ -172,11 +142,11 @@ class CustomerCreditTransferDomBuilder extends BaseDomBuilder {
         $CdtTrfTxInf->appendChild($creditorAccount);
 
         // remittance 2.98 2.99
-        $remittanceInformation = $this->createElement('RmtInf');
-        $remittanceInformation->appendChild($this->createElement('Ustrd', $transactionInformation->getRemittanceInformation()));
+        $remittanceInformation = $this->getRemittenceElement($transactionInformation->getRemittanceInformation());
         $CdtTrfTxInf->appendChild($remittanceInformation);
 
         $this->currentPayment->appendChild($CdtTrfTxInf);
     }
+
 
 }

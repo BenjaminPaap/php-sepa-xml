@@ -26,9 +26,18 @@ use Digitick\Sepa\DomBuilder\DomBuilderInterface;
 class BaseTransferInformation implements TransferInformationInterface{
 
     /**
+     * Account Identifier
+     *
      * @var string
      */
-    protected $paymentId;
+    protected $iban;
+
+    /**
+     * Financial Institution Identifier;
+     *
+     * @var string
+     */
+    protected $bic;
 
     /**
      * Must be between 0.01 and 999999999.99
@@ -38,9 +47,42 @@ class BaseTransferInformation implements TransferInformationInterface{
     protected $transferAmount;
 
     /**
+     * @var string
+     */
+    protected $name;
+
+    /**
+     * @var string
+     */
+    protected $instructionId;
+
+    /**
+     * @var string
+     */
+    protected $EndToEndIdentification;
+
+    /**
      * @var
      */
     protected $currency = 'EUR';
+
+    /**
+     * Purpose of this transaction
+     *
+     * @var string
+     */
+    protected $remittanceInformation;
+
+    /**
+     * @param string $amount
+     * @param string $iban
+     * @param string $name
+     */
+    public function __construct($amount, $iban, $name) {
+        $this->transferAmount = (float)$amount * 100;
+        $this->iban = $iban;
+        $this->name = $name;
+    }
 
     /**
      * @param DomBuilderInterface $domBuilder
@@ -68,6 +110,77 @@ class BaseTransferInformation implements TransferInformationInterface{
      */
     public function getCurrency() {
         return $this->currency;
+    }
+
+    /**
+     * @param string $EndToEndIdentification
+     */
+    public function setEndToEndIdentification($EndToEndIdentification) {
+        $this->EndToEndIdentification = $EndToEndIdentification;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEndToEndIdentification() {
+        return $this->EndToEndIdentification;
+    }
+
+    /**
+     * @param string $instructionId
+     */
+    public function setInstructionId($instructionId) {
+        $this->instructionId = $instructionId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getInstructionId() {
+        return $this->instructionId;
+    }
+
+
+    /**
+     * @param string $iban
+     */
+    public function setIban($iban) {
+        $this->iban = $iban;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIban() {
+        return $this->iban;
+    }
+
+    /**
+     * @param string $bic
+     */
+    public function setBic($bic) {
+        $this->bic = $bic;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBic() {
+        return $this->bic;
+    }
+
+    /**
+     * @param string $remittanceInformation
+     */
+    public function setRemittanceInformation($remittanceInformation) {
+        $this->remittanceInformation = $remittanceInformation;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRemittanceInformation() {
+        return $this->remittanceInformation;
     }
 
 }

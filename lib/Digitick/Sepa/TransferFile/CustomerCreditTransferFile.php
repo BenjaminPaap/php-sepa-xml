@@ -1,10 +1,7 @@
 <?php
 
 namespace Digitick\Sepa\TransferFile;
-use Digitick\Sepa\DomBuilder\DomBuilderInterface;
-use Digitick\Sepa\Exception\Exception;
 use Digitick\Sepa\Exception\InvalidTransferTypeException;
-use Digitick\Sepa\GroupHeader;
 use Digitick\Sepa\PaymentInformation;
 use Digitick\Sepa\TransferInformation\CustomerCreditTransferInformation;
 
@@ -30,14 +27,13 @@ use Digitick\Sepa\TransferInformation\CustomerCreditTransferInformation;
 
 class CustomerCreditTransferFile extends BaseTransferFile {
 
-    const PAIN_FORMAT = 'pain.001.001.03';
+    const PAIN_FORMAT = 'pain.001.002.03';
 
     /**
      * @param PaymentInformation $paymentInformation
      */
     public function addPaymentInformation(PaymentInformation $paymentInformation) {
-        $paymentInformation->setValidPaymentMethods(array('CHK', 'TRF', 'TRA'));
-        // TODO refactor as this will overwrite the payment method
+        $paymentInformation->setValidPaymentMethods(array('TRF'));
         $paymentInformation->setPaymentMethod('TRF');
         parent::addPaymentInformation($paymentInformation);
     }

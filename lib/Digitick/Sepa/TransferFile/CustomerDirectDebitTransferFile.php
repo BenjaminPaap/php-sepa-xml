@@ -1,6 +1,10 @@
 <?php
 
 namespace Digitick\Sepa\TransferFile;
+use Digitick\Sepa\Exception\InvalidTransferFileConfiguration;
+use Digitick\Sepa\Exception\InvalidTransferTypeException;
+use Digitick\Sepa\PaymentInformation;
+use Digitick\Sepa\TransferInformation\CustomerDirectDebitTransferInformation;
 
 /**
  * SEPA file generator.
@@ -24,5 +28,36 @@ namespace Digitick\Sepa\TransferFile;
 
 class CustomerDirectDebitTransferFile extends BaseTransferFile {
 
+    const PAIN_FORMAT = 'pain.008.002.02';
 
+    /**
+     * @param PaymentInformation $paymentInformation
+     */
+    public function addPaymentInformation(PaymentInformation $paymentInformation) {
+        $paymentInformation->setValidPaymentMethods(array('DD'));
+        $paymentInformation->setPaymentMethod('DD');
+        parent::addPaymentInformation($paymentInformation);
+    }
+
+    /**
+     * validate the transferfile
+     *
+     * @throws \Digitick\Sepa\Exception\InvalidTransferTypeException
+     */
+    public function validate() {
+        /** @var $payment PaymentInformation */
+        foreach($this->paymentInformations as $payment) {
+            if((string)$payment->getSequenceType() === '') {
+                throw new InvalidTransferFileConfiguration('Payment must contain a SequenceType');
+            }
+            if((string)$payment->getCreditorId() === '') {
+                throw new InvalidTransferFileConfiguration('Payment must contain a CreditorSchemeId');
+            }
+            foreach($payment->getTransfers() as $transfer) {
+                if(!$transfer instanceof CustomerDirectDebitTransferInformation) {
+                    throw new InvalidTransferTypeException('Transfers must be of type CustomerDirectDebitTransferInformation instead of: ' . get_class($transfer));
+                }
+            }
+        }
+    }
 }

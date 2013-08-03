@@ -30,5 +30,8 @@ interface TransferInformationInterface {
 
     public function getTransferAmount();
 
+    public function getEndToEndIdentification();
+
+    public function getInstructionId();
 
 }

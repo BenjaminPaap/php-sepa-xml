@@ -1,6 +1,7 @@
 <?php
 
 namespace Digitick\Sepa\DomBuilder;
+use Digitick\Sepa\GroupHeader;
 
 /**
  * SEPA file generator.
@@ -30,8 +31,14 @@ abstract class BaseDomBuilder implements DomBuilderInterface {
 
     protected $root;
 
+    /**
+     * @var \DOMElement
+     */
     protected $currentTransfer = null;
 
+    /**
+     * @var \DOMELement
+     */
     protected $currentPayment = null;
 
     function __construct($painFormat) {
@@ -69,5 +76,66 @@ abstract class BaseDomBuilder implements DomBuilderInterface {
     protected function intToCurrency($amount)
     {
         return sprintf("%01.2f", ($amount / 100));
+    }
+
+    /**
+     * Add GroupHeader Information to the document
+     *
+     * @param GroupHeader $groupHeader
+     * @return mixed
+     */
+    public function visitGroupHeader(GroupHeader $groupHeader) {
+        $groupHeaderTag = $this->doc->createElement('GrpHdr');
+        $messageId = $this->createElement('MsgId', $groupHeader->getMessageIdentification());
+        $groupHeaderTag->appendChild($messageId);
+        $creationDateTime = $this->createElement('CreDtTm', $groupHeader->getCreationDateTime());
+        $groupHeaderTag->appendChild($creationDateTime);
+        $groupHeaderTag->appendChild($this->createElement('NbOfTxs', $groupHeader->getNumberOfTransactions()));
+        $groupHeaderTag->appendChild($this->createElement('CtrlSum', $this->intToCurrency($groupHeader->getControlSumCents())));
+        $initiatingParty = $this->createElement('InitgPty');
+        $initiatingPartyName =  $this->createElement('Nm', $groupHeader->getInitiatingPartyName());
+        $initiatingParty->appendChild($initiatingPartyName);
+        if ($groupHeader->getInitiatingPartyId() !== null) {
+            $id = $this->createElement('Id', $groupHeader->getInitiatingPartyId());
+            $initiatingParty->appendChild($id);
+        }
+        $groupHeaderTag->appendChild($initiatingParty);
+        $this->currentTransfer->appendChild($groupHeaderTag);
+    }
+
+
+    /**
+     * @param string $bic
+     * @return \DOMElement
+     */
+    protected function getFinancialInstitutionElement($bic) {
+        $finInstitution = $this->createElement('FinInstnId');
+        $finInstitution->appendChild($this->createElement('BIC', $bic));
+
+        return $finInstitution;
+    }
+
+
+    /**
+     * @param string $iban
+     * @return \DOMElement
+     */
+    public function getIbanElement($iban) {
+        $id = $this->createElement('Id');
+        $id->appendChild($this->createElement('IBAN', $iban));
+
+        return $id;
+    }
+
+
+    /**
+     * @param string $remittenceInformation
+     * @return \DOMElement
+     */
+    public function getRemittenceElement($remittenceInformation) {
+        $remittanceInformation = $this->createElement('RmtInf');
+        $remittanceInformation->appendChild($this->createElement('Ustrd', $remittenceInformation));
+
+        return $remittanceInformation;
     }
 }

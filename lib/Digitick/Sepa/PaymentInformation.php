@@ -102,6 +102,16 @@ class PaymentInformation {
     protected $validPaymentMethods;
 
     /**
+     * @var string
+     */
+    protected $creditorId;
+
+    /**
+     * @var
+     */
+    protected $sequenceType;
+
+    /**
      * @param string $id
      * @param string $originAccountIBAN This is your IBAN
      * @param string $originAgentBIC This is your BIC
@@ -316,4 +326,33 @@ class PaymentInformation {
     public function getPaymentMethod() {
         return $this->paymentMethod;
     }
+
+    /**
+     * @param string $creditorSchemeId
+     */
+    public function setCreditorId($creditorSchemeId) {
+        $this->creditorId = $creditorSchemeId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCreditorId() {
+        return $this->creditorId;
+    }
+
+    /**
+     * @param mixed $sequenceType
+     */
+    public function setSequenceType($sequenceType) {
+        $this->sequenceType = $sequenceType;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSequenceType() {
+        return $this->sequenceType;
+    }
+
 }

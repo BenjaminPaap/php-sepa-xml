@@ -1,7 +1,12 @@
 <?php
 namespace Tests;
 
+use Digitick\Sepa\DomBuilder\CustomerCreditTransferDomBuilder;
+use Digitick\Sepa\DomBuilder\CustomerDirectDebitTransferDomBuilder;
 use Digitick\Sepa\GroupHeader;
+use Digitick\Sepa\PaymentInformation;
+use Digitick\Sepa\TransferFile\CustomerDirectDebitTransferFile;
+use Digitick\Sepa\TransferInformation\CustomerDirectDebitTransferInformation;
 
 /**
  * User: s.rohweder@blage.net
@@ -32,4 +37,35 @@ class CustomerDirectDebitValidationTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($validated);
     }
 
+    /**
+     * Test a transfer file with one payment and one transaction.
+     */
+    public function testSinglePaymentSingleTrans()
+    {
+
+        $groupHeader = new GroupHeader('transferID', 'Me');
+        $sepaFile = new CustomerDirectDebitTransferFile($groupHeader);
+
+        $transfer = new CustomerDirectDebitTransferInformation('0.02', 'FI1350001540000056', 'Their Corp');
+        $transfer->setBic('OKOYFIHH');
+        $transfer->setMandateSignDate(new \DateTime('16.08.2013'));
+        $transfer->setMandateId('ABCDE');
+        $transfer->setFinalCollectionDate(new \DateTime('22.08.2013'));
+        $transfer->setRemittanceInformation('Transaction Description');
+
+        $payment = new PaymentInformation('Payment Info ID', 'FR1420041010050500013M02606', 'PSSTFRPPMON', 'My Corp');
+        $payment->setSequenceType('OOFF');
+        $payment->setCreditorId('DE21WVM1234567890');
+        $payment->addTransfer($transfer);
+
+        $sepaFile->addPaymentInformation($payment);
+
+        $domBuilder = new CustomerDirectDebitTransferDomBuilder();
+        $sepaFile->accept($domBuilder);
+        $xml = $domBuilder->asXml();
+        $this->dom->loadXML($xml);
+
+        $validated = $this->dom->schemaValidate($this->schema);
+        $this->assertTrue($validated);
+    }
 }
